@@ -1,0 +1,108 @@
+#PLAYER
+Name         Nuggs~
+ShortDescr   ~
+LongDescr    ~
+Description  ~
+Prompt       <%hhp %mm %vmv> ~
+Sex          1
+Class        0
+Race         0
+Level        40
+Trust        0
+Wizbit       0
+Played       1090
+Note         0
+Room         3700
+HpManaMove   291 291 236 236 500 500
+Gold         0
+Exp          40000
+Act          1608
+AffectedBy   0
+Position     7
+Practice     80
+SavingThrow  -1
+Alignment    0
+Hitroll      1
+Damroll      1
+Armor        83
+Wimpy        0
+Deaf         0
+Password     NuO7ywqCae/FU~
+Bamfin       ~
+Bamfout      ~
+Title         the Implementor~
+AttrPerm     13 16 13 13 13
+AttrMod      0 0 0 0 0
+Condition    0 48 48
+Pagelen      20
+End
+
+#OBJECT
+Nest         0
+Name         banner~
+ShortDescr   a war banner~
+Description  A war banner is on the floor here.~
+Vnum         3716
+ExtraFlags   65
+WearFlags    1
+WearLoc      0
+ItemType     1
+Weight       1
+Level        0
+Timer        0
+Cost         11
+Values       0 0 -1 0
+End
+
+#OBJECT
+Nest         0
+Name         vest~
+ShortDescr   a sub issue vest~
+Description  You see a sub issue vest here.~
+Vnum         3703
+ExtraFlags   0
+WearFlags    9
+WearLoc      5
+ItemType     9
+Weight       5
+Level        0
+Timer        0
+Cost         9
+Values       3 0 0 0
+End
+
+#OBJECT
+Nest         0
+Name         shield~
+ShortDescr   a sub issue shield~
+Description  You see a sub issue shield here.~
+Vnum         3704
+ExtraFlags   0
+WearFlags    513
+WearLoc      11
+ItemType     9
+Weight       5
+Level        0
+Timer        0
+Cost         9
+Values       2 0 0 0
+End
+
+#OBJECT
+Nest         0
+Name         dagger~
+ShortDescr   a sub issue dagger~
+Description  You see a sub issue dagger here.~
+Vnum         3701
+ExtraFlags   64
+WearFlags    8193
+WearLoc      16
+ItemType     5
+Weight       5
+Level        0
+Timer        0
+Cost         10
+Values       0 1 6 11
+End
+
+#END
