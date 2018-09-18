@@ -2806,7 +2806,7 @@ void do_owhere( CHAR_DATA *ch, char *argument )
     return;
 }
 
-extern int port,control; /* db.c */
+extern int port,control;
 void do_copyover (CHAR_DATA *ch, char * argument) {
     FILE *fp;
     DESCRIPTOR_DATA *d, *d_next;
