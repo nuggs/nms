@@ -25,8 +25,6 @@
 #include <time.h>
 #include "merc.h"
 
-
-
 /*
  * Local functions.
  */
@@ -45,8 +43,6 @@ void	raw_kill	args( ( CHAR_DATA *victim ) );
 void	set_fighting	args( ( CHAR_DATA *ch, CHAR_DATA *victim ) );
 void	disarm		args( ( CHAR_DATA *ch, CHAR_DATA *victim ) );
 void	trip		args( ( CHAR_DATA *ch, CHAR_DATA *victim ) );
-
-
 
 /*
  * Control the fights going on.
@@ -166,7 +162,7 @@ void multi_hit( CHAR_DATA *ch, CHAR_DATA *victim, int dt )
     chance = IS_NPC(ch) ? ch->level / 2 : 0;
     if ( number_percent( ) < chance )
 	one_hit( ch, victim, dt );
-    
+
     return;
 }
 
@@ -393,7 +389,7 @@ void damage( CHAR_DATA *ch, CHAR_DATA *victim, int dam, int dt )
     case POS_MORTAL:
 	act( "$n is mortally wounded, and will die soon, if not aided.",
 	    victim, NULL, NULL, TO_ROOM );
-	send_to_char( 
+	send_to_char(
 	    "You are mortally wounded, and will die soon, if not aided.\n\r",
 	    victim );
 	break;
@@ -900,7 +896,7 @@ void group_gain( CHAR_DATA *ch, CHAR_DATA *victim )
      */
     if ( IS_NPC(ch) || !IS_NPC(victim) || victim == ch )
 	return;
-    
+
     members = 0;
     for ( gch = ch->in_room->people; gch != NULL; gch = gch->next_in_room )
     {
@@ -1276,7 +1272,7 @@ void do_backstab( CHAR_DATA *ch, char *argument )
     }
 
     one_argument( argument, arg );
-    
+
     if ( arg[0] == '\0' )
     {
 	send_to_char( "Backstab whom?\n\r", ch );
