@@ -27,8 +27,6 @@
 #include <time.h>
 #include "merc.h"
 
-
-
 /*
  * Local functions.
  */
@@ -39,9 +37,7 @@ void	talk_channel	args( ( CHAR_DATA *ch, char *argument,
 			    int channel, const char *verb ) );
 void    note_delete     args( ( NOTE_DATA *pnote ) );
 
-
-bool is_note_to( CHAR_DATA *ch, NOTE_DATA *pnote )
-{
+bool is_note_to( CHAR_DATA *ch, NOTE_DATA *pnote ) {
     if ( !str_cmp( ch->name, pnote->sender ) )
 	return TRUE;
 
@@ -57,23 +53,17 @@ bool is_note_to( CHAR_DATA *ch, NOTE_DATA *pnote )
     return FALSE;
 }
 
-
-
-void note_attach( CHAR_DATA *ch )
-{
+void note_attach( CHAR_DATA *ch ) {
     NOTE_DATA *pnote;
 
     if ( ch->pnote != NULL )
 	return;
 
-    if ( note_free == NULL )
-    {
-	pnote	  = alloc_perm( sizeof(*ch->pnote) );
-    }
-    else
-    {
-	pnote	  = note_free;
-	note_free = note_free->next;
+    if ( note_free == NULL ) {
+	    pnote	  = alloc_perm( sizeof(*ch->pnote) );
+    } else {
+	    pnote	  = note_free;
+	    note_free = note_free->next;
     }
 
     pnote->next		= NULL;
@@ -86,10 +76,7 @@ void note_attach( CHAR_DATA *ch )
     return;
 }
 
-
-
-void note_remove( CHAR_DATA *ch, NOTE_DATA *pnote )
-{
+void note_remove( CHAR_DATA *ch, NOTE_DATA *pnote ) {
     char to_new[MAX_INPUT_LENGTH];
     char to_one[MAX_INPUT_LENGTH];
     FILE *fp;
@@ -102,24 +89,21 @@ void note_remove( CHAR_DATA *ch, NOTE_DATA *pnote )
      */
     to_new[0]	= '\0';
     to_list	= pnote->to_list;
-    while ( *to_list != '\0' )
-    {
-	to_list	= one_argument( to_list, to_one );
-	if ( to_one[0] != '\0' && str_cmp( ch->name, to_one ) )
-	{
-	    strcat( to_new, " " );
-	    strcat( to_new, to_one );
-	}
+    while ( *to_list != '\0' ) {
+	    to_list	= one_argument( to_list, to_one );
+	    if ( to_one[0] != '\0' && str_cmp( ch->name, to_one ) ) {
+            strcat( to_new, " " );
+	        strcat( to_new, to_one );
+        }
     }
 
     /*
      * Just a simple recipient removal?
      */
-    if ( str_cmp( ch->name, pnote->sender ) && to_new[0] != '\0' )
-    {
-	free_string( pnote->to_list );
-	pnote->to_list = str_dup( to_new + 1 );
-	return;
+    if ( str_cmp( ch->name, pnote->sender ) && to_new[0] != '\0' ) {
+	    free_string( pnote->to_list );
+       	pnote->to_list = str_dup( to_new + 1 );
+        return;
     }
 
     /*
