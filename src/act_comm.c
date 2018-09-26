@@ -109,25 +109,20 @@ void note_remove( CHAR_DATA *ch, NOTE_DATA *pnote ) {
     /*
      * Remove note from linked list.
      */
-    if ( pnote == note_list )
-    {
-	note_list = pnote->next;
-    }
-    else
-    {
-	for ( prev = note_list; prev != NULL; prev = prev->next )
-	{
-	    if ( prev->next == pnote )
-		break;
-	}
+    if ( pnote == note_list ) {
+        note_list = pnote->next;
+    } else {
+        for (prev = note_list; prev != NULL; prev = prev->next) {
+            if ( prev->next == pnote )
+		    break;
+        }
 
-	if ( prev == NULL )
-	{
-	    bug( "Note_remove: pnote not found.", 0 );
-	    return;
-	}
+        if ( prev == NULL ) {
+            bug( "Note_remove: pnote not found.", 0 );
+            return;
+        }
 
-	prev->next = pnote->next;
+        prev->next = pnote->next;
     }
 
     free_string( pnote->text    );
@@ -135,8 +130,8 @@ void note_remove( CHAR_DATA *ch, NOTE_DATA *pnote ) {
     free_string( pnote->to_list );
     free_string( pnote->date    );
     free_string( pnote->sender  );
-    pnote->next	= note_free;
-    note_free	= pnote;
+    pnote->next = note_free;
+    note_free = pnote;
 
     /*
      * Rewrite entire list.
