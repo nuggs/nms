@@ -26,8 +26,6 @@
 #include <time.h>
 #include "merc.h"
 
-
-
 /*
  * Local functions.
  */
