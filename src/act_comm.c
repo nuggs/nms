@@ -137,24 +137,20 @@ void note_remove( CHAR_DATA *ch, NOTE_DATA *pnote ) {
      * Rewrite entire list.
      */
     fclose( fpReserve );
-    if ( ( fp = fopen( NOTE_FILE, "w" ) ) == NULL )
-    {
-	perror( NOTE_FILE );
+    if ( ( fp = fopen( NOTE_FILE, "w" ) ) == NULL ) {
+		perror( NOTE_FILE );
+    } else {
+		for (pnote = note_list; pnote != NULL; pnote = pnote->next) {
+		    fprintf(fp, "Sender  %s~\n", pnote->sender);
+		    fprintf(fp, "Date    %s~\n", pnote->date);
+		    fprintf(fp, "Stamp   %ld\n", pnote->date_stamp);
+		    fprintf(fp, "To      %s~\n", pnote->to_list);
+		    fprintf(fp, "Subject %s~\n", pnote->subject);
+		    fprintf(fp, "Text\n%s~\n\n", pnote->text);
+		}
+		fclose(fp);
     }
-    else
-    {
-	for ( pnote = note_list; pnote != NULL; pnote = pnote->next )
-	{
-	    fprintf( fp, "Sender  %s~\n", pnote->sender );
-	    fprintf( fp, "Date    %s~\n", pnote->date );
-	    fprintf( fp, "Stamp   %ld\n", pnote->date_stamp );
-	    fprintf( fp, "To      %s~\n", pnote->to_list );
-	    fprintf( fp, "Subject %s~\n", pnote->subject );
-	    fprintf( fp, "Text\n%s~\n\n", pnote->text );
-	}
-	fclose( fp );
-    }
-    fpReserve = fopen( NULL_FILE, "r" );
+    fpReserve = fopen(NULL_FILE, "r");
     return;
 }
 
@@ -1030,7 +1026,7 @@ void do_quit( CHAR_DATA *ch, char *argument )
 	return;
     }
 
-    send_to_char( 
+    send_to_char(
 	"Had I but time--as this fell sergeant, Death,\n\rIs strict in his arrest--O, I could tell you--\n\rBut let it be.\n\r",
 	ch );
     act( "$n has left the game.", ch, NULL, NULL, TO_ROOM );
@@ -1099,7 +1095,7 @@ void do_follow( CHAR_DATA *ch, char *argument )
 	stop_follower( ch );
 	return;
     }
-    
+
     if ( ( ch->level - victim->level < -5 || ch->level - victim->level >  5 )
     &&   !IS_HERO(ch) )
     {
@@ -1118,7 +1114,7 @@ void do_follow( CHAR_DATA *ch, char *argument )
 
 void add_follower( CHAR_DATA *ch, CHAR_DATA *master )
 {
-  
+
     if ( ch->master != NULL )
     {
 	bug( "Add_follower: non-null master.", 0 );
@@ -1363,7 +1359,7 @@ void do_split( CHAR_DATA *ch, char *argument )
 	send_to_char( "Split how much?\n\r", ch );
 	return;
     }
-    
+
     amount = atoi( arg );
 
     if ( amount < 0 )
@@ -1383,7 +1379,7 @@ void do_split( CHAR_DATA *ch, char *argument )
 	send_to_char( "You don't have that much gold.\n\r", ch );
 	return;
     }
-  
+
     members = 0;
     for ( gch = ch->in_room->people; gch != NULL; gch = gch->next_in_room )
     {
@@ -1396,7 +1392,7 @@ void do_split( CHAR_DATA *ch, char *argument )
 	send_to_char( "Just keep it all.\n\r", ch );
 	return;
     }
-	    
+
     share = amount / members;
     extra = amount % members;
 
