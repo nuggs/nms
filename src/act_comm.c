@@ -30,24 +30,23 @@
 /*
  * Local functions.
  */
-bool	is_note_to	args( ( CHAR_DATA *ch, NOTE_DATA *pnote ) );
-void	note_attach	args( ( CHAR_DATA *ch ) );
-void	note_remove	args( ( CHAR_DATA *ch, NOTE_DATA *pnote ) );
-void	talk_channel	args( ( CHAR_DATA *ch, char *argument,
-			    int channel, const char *verb ) );
-void    note_delete     args( ( NOTE_DATA *pnote ) );
+bool	is_note_to		args((CHAR_DATA *ch, NOTE_DATA *pnote));
+void	note_attach		args((CHAR_DATA *ch));
+void	note_remove		args((CHAR_DATA *ch, NOTE_DATA *pnote));
+void	talk_channel	args((CHAR_DATA *ch, char *argument, int channel, const char *verb));
+void    note_delete     args((NOTE_DATA *pnote));
 
-bool is_note_to( CHAR_DATA *ch, NOTE_DATA *pnote ) {
-    if ( !str_cmp( ch->name, pnote->sender ) )
+bool is_note_to(CHAR_DATA *ch, NOTE_DATA *pnote) {
+    if (!str_cmp(ch->name, pnote->sender))
 	return TRUE;
 
-    if ( is_name( "all", pnote->to_list ) )
+    if (is_name("all", pnote->to_list))
 	return TRUE;
 
-    if ( IS_HERO(ch) && is_name( "immortal", pnote->to_list ) )
+    if (IS_HERO(ch) && is_name("immortal", pnote->to_list))
 	return TRUE;
 
-    if ( is_name( ch->name, pnote->to_list ) )
+    if (is_name(ch->name, pnote->to_list))
 	return TRUE;
 
     return FALSE;

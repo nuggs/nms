@@ -1294,8 +1294,6 @@ const	struct	social_type	social_table [] =
     }
 };
 
-
-
 /*
  * The main entry point for executing commands.
  * Can be recursively called from 'at', 'order', 'force'.
