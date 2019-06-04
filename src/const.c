@@ -24,8 +24,6 @@
 #include <time.h>
 #include "merc.h"
 
-
-
 /*
  * Class table.
  */
