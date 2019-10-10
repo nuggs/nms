@@ -3,7 +3,7 @@ RM	= rm
 EXE	= merc
 PROF    = -g
 
-C_FLAGS = -O -Wall $(PROF) $(NOCRYPT) -std=c11
+C_FLAGS = -O -Wall $(PROF) $(NOCRYPT)
 L_FLAGS = -O $(PROF) -lcrypt
 
 C_FILES := $(wildcard *.c)
