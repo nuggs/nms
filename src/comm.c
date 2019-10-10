@@ -89,22 +89,12 @@ const	char	echo_on_str	[] = { '\0' };
 const	char 	go_ahead_str	[] = { '\0' };
 #endif
 
-#if	defined(unix)
-#include <fcntl.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <arpa/telnet.h>
-const	char	echo_off_str	[] = { IAC, WILL, TELOPT_ECHO, '\0' };
-const	char	echo_on_str	[] = { IAC, WONT, TELOPT_ECHO, '\0' };
-const	char 	go_ahead_str	[] = { IAC, GA, '\0' };
-#endif
-
 /* I'm going to go through and remove most of this shit we don't need */
-#if	defined(linux)
+#if	defined(linux) || defined(unix)
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <arpa/telnet.h>
 const   char    echo_off_str    [] = { IAC, WILL, TELOPT_ECHO, '\0' };
@@ -400,6 +390,7 @@ int init_socket( int port )
 {
     static struct sockaddr_in sa_zero;
     struct sockaddr_in sa;
+	int keepalive_time = 120, keepalive_count = 10, keepalive_interval = 1;
     int x = 1; 
     int fd;
 
@@ -410,7 +401,7 @@ int init_socket( int port )
     }
 
     if ( setsockopt( fd, SOL_SOCKET, SO_REUSEADDR,
-    (char *) &x, sizeof(x) ) < 0 )
+    (char *) &x, sizeof x) < 0)
     {
 	perror( "Init_socket: SO_REUSEADDR" );
 	close( fd );
@@ -434,24 +425,26 @@ int init_socket( int port )
     }
 #endif
 
-    sa		    = sa_zero;
+    sa				= sa_zero;
     sa.sin_family   = AF_INET;
-    sa.sin_port	    = htons( port );
+    sa.sin_port	    = htons(port);
 
-    if ( bind( fd, (struct sockaddr *) &sa, sizeof(sa) ) < 0 )
-    {
-	perror( "Init_socket: bind" );
-	close( fd );
-	exit( 1 );
+    if (bind(fd, (struct sockaddr *) &sa, sizeof sa) < 0) {
+		perror("Init_socket: bind");
+		close(fd);
+		exit(1);
     }
 
-    if ( listen( fd, 3 ) < 0 )
-    {
-	perror( "Init_socket: listen" );
-	close( fd );
-	exit( 1 );
+    if (listen(fd, 3) < 0) {
+		perror("Init_socket: listen");
+		close(fd);
+		exit(1);
     }
 
+		/* enable keepalive, I think I'm being a little aggressive so maybe adjust these numbers as you see fit */
+    setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &keepalive_time, sizeof keepalive_time);
+    setsockopt(fd, IPPROTO_TCP, TCP_KEEPCNT, &keepalive_count, sizeof keepalive_count);
+    setsockopt(fd, IPPROTO_TCP, TCP_KEEPINTVL, &keepalive_interval, sizeof keepalive_interval);
     return fd;
 }
 #endif

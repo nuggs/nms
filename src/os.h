@@ -31,12 +31,11 @@
 #       error "Unknown Apple platform"
 #   endif
 #elif __linux__
-#   define linux
 #   define ESCAPE_CODE "\033"
 #elif __unix__
-#   define unix
+    /* have stuff here */
 #elif defined(_POSIX_VERSION)
-    // POSIX
+    /* POSIX */
 #else
 #   error "Unknown compiler"
 #endif
