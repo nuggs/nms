@@ -2806,7 +2806,7 @@ void do_owhere( CHAR_DATA *ch, char *argument )
     return;
 }
 
-extern int port,control;
+extern int game_port, control;
 void do_copyover (CHAR_DATA *ch, char * argument) {
     FILE *fp;
     DESCRIPTOR_DATA *d, *d_next;
@@ -2852,7 +2852,7 @@ void do_copyover (CHAR_DATA *ch, char * argument) {
 	fclose (fpReserve);
 
 	/* exec - descriptors are inherited */
-	sprintf (buf, "%d", port);
+	sprintf (buf, "%d", game_port);
 	sprintf (buf2, "%d", control);
 	execl (EXE_FILE, "merc", buf, "copyover", buf2, (char *) NULL);
 

@@ -296,10 +296,11 @@ void	read_from_buffer	args( ( DESCRIPTOR_DATA *d ) );
 void	stop_idling		args( ( CHAR_DATA *ch ) );
 void    bust_a_prompt           args( ( CHAR_DATA *ch ) );
 
-int     port, control;
+//int     port, control;
+int     game_port = 1234, control;
+char    * game_port_str = "1234";
 
-int main( int argc, char **argv )
-{
+int main( int argc, char *argv[] ) {
     struct timeval now_time;
     bool fCopyOver = FALSE;
 
@@ -322,29 +323,27 @@ int main( int argc, char **argv )
      */
 #if defined(macintosh)
     console_options.nrows = 31;
-    cshow( stdout );
     csetmode( C_RAW, stdin );
+    cshow( stdout );
     cecho2file( "log file", 1, stderr );
 #endif
 
     /*
      * Reserve one channel for our use.
      */
-    if ( ( fpReserve = fopen( NULL_FILE, "r" ) ) == NULL )
-    {
-	perror( NULL_FILE );
-	exit( 1 );
+    if ((fpReserve = fopen(NULL_FILE, "r")) == NULL) {
+        perror( NULL_FILE );
+        exit( 1 );
     }
 
     /*
      * Get the port number.
      */
-    port = 1234;
     if ( argc > 1 ) {
 	    if ( !is_number( argv[1] ) ) {
 	        fprintf( stderr, "Usage: %s [port #]\n", argv[0] );
 	        exit( 1 );
-	    } else if ( ( port = atoi( argv[1] ) ) <= 1024 ) {
+	    } else if ( ( game_port = atoi( argv[1] ) ) <= 1024 ) {
             fprintf( stderr, "Port number must be above 1024.\n" );
             exit( 1 );
 	    }
@@ -367,10 +366,9 @@ int main( int argc, char **argv )
 
 #if defined(unix) || defined(linux)
     if (!fCopyOver)
-        control = init_socket( port );
+        control = init_socket( game_port );
     boot_db(fCopyOver);
-    sprintf( log_buf, "Merc is ready to rock on port %d.", port );
-    log_string( log_buf );
+    log_string("Merc is ready to rock on port %d.", game_port);
     game_loop_unix( control );
     close( control );
 #endif
@@ -383,73 +381,96 @@ int main( int argc, char **argv )
     return 0;
 }
 
+int init_socket(int port) {
+    int keepalive_time = 120, keepalive = 1, keepalive_count = 10, keepalive_interval = 30, status = 0, sock = -1;
+    struct addrinfo hints, *service, *ptr;
 
+    /*
+     * AF_UNSPEC returns either IPv4 or IPv6 use the below
+     * AF_INET or AF_INET6 if you want to force either of those 
+     */
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family     = AF_UNSPEC;
+    hints.ai_socktype   = SOCK_STREAM;
+    hints.ai_flags      = AI_PASSIVE;
 
-#if defined(unix) || defined(linux)
-int init_socket( int port )
-{
-    static struct sockaddr_in sa_zero;
-    struct sockaddr_in sa;
-	int keepalive_time = 120, keepalive_count = 10, keepalive_interval = 1;
-    int x = 1; 
-    int fd;
-
-    if ( ( fd = socket( AF_INET, SOCK_STREAM, 0 ) ) < 0 )
-    {
-	perror( "Init_socket: socket" );
-	exit( 1 );
+    if ((status = getaddrinfo(NULL, game_port_str, &hints, &service)) != 0) {
+        char error[2046];
+        snprintf(error, sizeof error, "getaddrinfo(): %s\n", gai_strerror(status));
+        perror(error);
+        exit(EXIT_FAILURE);
     }
 
-    if ( setsockopt( fd, SOL_SOCKET, SO_REUSEADDR,
-    (char *) &x, sizeof x) < 0)
-    {
-	perror( "Init_socket: SO_REUSEADDR" );
-	close( fd );
-	exit( 1 );
-    }
+    for (ptr = service; ptr != NULL; ptr = ptr->ai_next) {
+        struct sockaddr_in sin;
+        int x = 1;
+
+        if ((sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol)) < 0) {
+            perror("Failed to create socket");
+            exit(EXIT_FAILURE);
+        }
+
+        if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *) &x, sizeof x) < 0) {
+            perror("Failed to create socket");
+            close(sock);
+            exit(EXIT_FAILURE);
+        }
 
 #if defined(SO_DONTLINGER) && !defined(SYSV)
-    {
-	struct	linger	ld;
+        {
+            struct	linger	ld;
 
-	ld.l_onoff  = 1;
-	ld.l_linger = 1000;
+            ld.l_onoff  = 1;
+            ld.l_linger = 1000;
 
-	if ( setsockopt( fd, SOL_SOCKET, SO_DONTLINGER,
-	(char *) &ld, sizeof(ld) ) < 0 )
-	{
-	    perror( "Init_socket: SO_DONTLINGER" );
-	    close( fd );
-	    exit( 1 );
-	}
-    }
+            if (setsockopt(fd, SOL_SOCKET, SO_DONTLINGER, (char *) &ld, sizeof(ld)) < 0) {
+                perror( "Init_socket: SO_DONTLINGER" );
+                close( fd );
+                exit( 1 );
+            }
+        }
 #endif
 
-    sa				= sa_zero;
-    sa.sin_family   = AF_INET;
-    sa.sin_port	    = htons(port);
+        sin.sin_family      = AF_UNSPEC;
+        sin.sin_addr.s_addr = INADDR_ANY;
+        sin.sin_port        = htons(game_port);
 
-    if (bind(fd, (struct sockaddr *) &sa, sizeof sa) < 0) {
-		perror("Init_socket: bind");
-		close(fd);
-		exit(1);
+        if (bind(sock, (struct sockaddr *) &sin, sizeof sin) < 0) {
+            perror("Failed to bind to address");
+            close(sock);
+            exit(EXIT_FAILURE);
+        }
+        break;
     }
 
-    if (listen(fd, 3) < 0) {
-		perror("Init_socket: listen");
-		close(fd);
-		exit(1);
+    /* Have to make sure to clean up after getaddrinfo */
+    freeaddrinfo(service);
+
+    /*
+     * I've read the backlog max is 128(Not from Beej's Guide), Beej's networking
+     * guide starts with ten and says to increase if we experience connection
+     * refused errors...
+     * I've also read that it's silently limited to 5 in C...
+     * Most of this was years ago, I'm sure this is fine.
+     */
+    if (listen(sock, 10) < 0) {
+        perror("Init_socket: bind");
+        close(sock);
+        exit(EXIT_FAILURE);
     }
 
-		/* enable keepalive, I think I'm being a little aggressive so maybe adjust these numbers as you see fit */
-    setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &keepalive_time, sizeof keepalive_time);
-    setsockopt(fd, IPPROTO_TCP, TCP_KEEPCNT, &keepalive_count, sizeof keepalive_count);
-    setsockopt(fd, IPPROTO_TCP, TCP_KEEPINTVL, &keepalive_interval, sizeof keepalive_interval);
-    return fd;
+    /* Set keep-alive so clients with crappy routers don't get disconnected while idle */
+    if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(int)) == -1) {
+        perror("Error in setsockopt(keepalive)");
+        close(sock);
+        exit(EXIT_FAILURE);
+    }
+
+    setsockopt(sock, IPPROTO_TCP, TCP_KEEPIDLE, &keepalive_time, sizeof keepalive_time);
+    setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT, &keepalive_count, sizeof keepalive_count);
+    setsockopt(sock, IPPROTO_TCP, TCP_KEEPINTVL, &keepalive_interval, sizeof keepalive_interval);
+    return sock;
 }
-#endif
-
-
 
 #if defined(macintosh) || defined(MSDOS)
 void game_loop_mac_msdos( void )
