@@ -381,6 +381,7 @@ int main( int argc, char *argv[] ) {
     return 0;
 }
 
+#if defined(unix) || defined(linux)
 int init_socket(int port) {
     int keepalive_time = 120, keepalive = 1, keepalive_count = 10, keepalive_interval = 30, status = 0, sock = -1;
     struct addrinfo hints, *service, *ptr;
@@ -471,6 +472,7 @@ int init_socket(int port) {
     setsockopt(sock, IPPROTO_TCP, TCP_KEEPINTVL, &keepalive_interval, sizeof keepalive_interval);
     return sock;
 }
+#endif
 
 #if defined(macintosh) || defined(MSDOS)
 void game_loop_mac_msdos( void )
@@ -855,33 +857,28 @@ void new_descriptor( int control )
 
     size = sizeof(sock);
     getsockname( control, (struct sockaddr *) &sock, &size );
-    if ( ( desc = accept( control, (struct sockaddr *) &sock, &size) ) < 0 )
-    {
-	perror( "New_descriptor: accept" );
-	return;
+    if ((desc = accept(control, (struct sockaddr *) &sock, &size)) < 0) {
+        perror( "New_descriptor: accept" );
+        return;
     }
 
 #if !defined(FNDELAY)
 #define FNDELAY O_NDELAY
 #endif
 
-    if ( fcntl( desc, F_SETFL, FNDELAY ) == -1 )
-    {
-	perror( "New_descriptor: fcntl: FNDELAY" );
-	return;
+    if (fcntl(desc, F_SETFL, FNDELAY) == -1) {
+        perror("New_descriptor: fcntl: FNDELAY");
+        return;
     }
 
     /*
      * Cons a new descriptor.
      */
-    if ( descriptor_free == NULL )
-    {
-	dnew		= alloc_perm( sizeof(*dnew) );
-    }
-    else
-    {
-	dnew		= descriptor_free;
-	descriptor_free	= descriptor_free->next;
+    if (descriptor_free == NULL) {
+        dnew		= alloc_perm( sizeof(*dnew) );
+    } else {
+    dnew		= descriptor_free;
+    descriptor_free	= descriptor_free->next;
     }
 
     init_descriptor(dnew, desc);
@@ -889,27 +886,26 @@ void new_descriptor( int control )
     size = sizeof(sock);
     if ( getpeername( desc, (struct sockaddr *) &sock, &size ) < 0 )
     {
-	perror( "New_descriptor: getpeername" );
-	dnew->host = str_dup( "(unknown)" );
+    perror( "New_descriptor: getpeername" );
+    dnew->host = str_dup( "(unknown)" );
     }
     else
     {
-	/*
-	 * Would be nice to use inet_ntoa here but it takes a struct arg,
-	 * which ain't very compatible between gcc and system libraries.
-	 */
-	int addr;
+    /*
+     * Would be nice to use inet_ntoa here but it takes a struct arg,
+     * which ain't very compatible between gcc and system libraries.
+     */
+    int addr;
 
-	addr = ntohl( sock.sin_addr.s_addr );
-	sprintf( buf, "%d.%d.%d.%d",
-	    ( addr >> 24 ) & 0xFF, ( addr >> 16 ) & 0xFF,
-	    ( addr >>  8 ) & 0xFF, ( addr       ) & 0xFF
-	    );
-	sprintf( log_buf, "Sock.sinaddr:  %s", buf );
-	log_string( log_buf );
-	from = gethostbyaddr( (char *) &sock.sin_addr,
-	    sizeof(sock.sin_addr), AF_INET );
-	dnew->host = str_dup( from ? from->h_name : buf );
+    addr = ntohl( sock.sin_addr.s_addr );
+    sprintf( buf, "%d.%d.%d.%d",
+        ( addr >> 24 ) & 0xFF, ( addr >> 16 ) & 0xFF,
+        ( addr >>  8 ) & 0xFF, ( addr       ) & 0xFF);
+    sprintf( log_buf, "Sock.sinaddr:  %s", buf );
+    log_string( log_buf );
+    from = gethostbyaddr( (char *) &sock.sin_addr,
+        sizeof(sock.sin_addr), AF_INET );
+        dnew->host = str_dup( from ? from->h_name : buf );
     }
 	
     /*
