@@ -847,11 +847,9 @@ void init_descriptor(DESCRIPTOR_DATA *dnew, int desc) {
 #if defined(unix) || defined(linux)
 void new_descriptor( int control )
 {
-    char buf[MAX_STRING_LENGTH];
+	struct sockaddr_storage sock;
     DESCRIPTOR_DATA *dnew;
     BAN_DATA *pban;
-    struct sockaddr_in sock;
-    struct hostent *from;
     int desc;
     socklen_t size;
 
@@ -875,39 +873,51 @@ void new_descriptor( int control )
      * Cons a new descriptor.
      */
     if (descriptor_free == NULL) {
-        dnew		= alloc_perm( sizeof(*dnew) );
+        dnew            = alloc_perm(sizeof(*dnew));
     } else {
-    dnew		= descriptor_free;
-    descriptor_free	= descriptor_free->next;
+        dnew            = descriptor_free;
+        descriptor_free = descriptor_free->next;
     }
 
     init_descriptor(dnew, desc);
 
     size = sizeof(sock);
-    if ( getpeername( desc, (struct sockaddr *) &sock, &size ) < 0 )
-    {
-    perror( "New_descriptor: getpeername" );
-    dnew->host = str_dup( "(unknown)" );
-    }
-    else
-    {
-    /*
-     * Would be nice to use inet_ntoa here but it takes a struct arg,
-     * which ain't very compatible between gcc and system libraries.
-     */
-    int addr;
+    if (getpeername(desc, (struct sockaddr *) &sock, &size) < 0) {
+        perror( "New_descriptor: getpeername" );
+        dnew->host = str_dup( "(unknown)" );
+    } else {
+        char ip[INET6_ADDRSTRLEN], host[NI_MAXHOST];
+        /*
+         * Would be nice to use inet_ntoa here but it takes a struct arg,
+         * which ain't very compatible between gcc and system libraries.
+         * What's nice is that it's not 1993...  We can use getnameinfo...
+         * Which is what we're going to do.
+         * - Turncoat
+         */
 
-    addr = ntohl( sock.sin_addr.s_addr );
-    sprintf( buf, "%d.%d.%d.%d",
-        ( addr >> 24 ) & 0xFF, ( addr >> 16 ) & 0xFF,
-        ( addr >>  8 ) & 0xFF, ( addr       ) & 0xFF);
-    sprintf( log_buf, "Sock.sinaddr:  %s", buf );
-    log_string( log_buf );
-    from = gethostbyaddr( (char *) &sock.sin_addr,
-        sizeof(sock.sin_addr), AF_INET );
-        dnew->host = str_dup( from ? from->h_name : buf );
+        /* 
+         * We could use a switch or if statement to check for family type and
+         * call inet_ntop accordingly or we can just call this twice, first time
+         * with the NUMERICHOST flag to get the IP address.
+         *
+         * I couldn't find any documentation that says calling this twice is bad
+         * so here we are, getnameinfo is newer than inet_ntop, shouldn't we use
+         * the latest functions?
+         */
+        if (getnameinfo((struct sockaddr *) &sock, INET6_ADDRSTRLEN, ip, sizeof ip, NULL, 0, NI_NUMERICHOST) == 0) {
+            log_string("Do something with IP information: %s", ip);
+        }
+
+        /* Now, we're getting the hostname of the connected client */
+        if (getnameinfo((struct sockaddr *) &sock, INET6_ADDRSTRLEN, host, sizeof host, NULL, 0, 0) == 0) {
+            log_string("Host: %s", host);
+            if (dnew->host != NULL)
+                free_string(dnew->host);
+
+            dnew->host = str_dup(host);
+        }
     }
-	
+
     /*
      * Swiftest: I added the following to ban sites.  I don't
      * endorse banning of sites, but Copper has few descriptors now
@@ -916,26 +926,24 @@ void new_descriptor( int control )
      *
      * Furey: added suffix check by request of Nickel of HiddenWorlds.
      */
-    for ( pban = ban_list; pban != NULL; pban = pban->next )
-    {
-	if ( str_suffix( pban->name, dnew->host ) )
-	{
-	    write_to_descriptor( desc,
-		"Your site has been banned from this Mud.\n\r", 0 );
-	    close( desc );
-	    free_string( dnew->host );
-	    free_mem( dnew->outbuf, dnew->outsize );
-	    dnew->next		= descriptor_free;
-	    descriptor_free	= dnew;
-	    return;
-	}
+    for (pban = ban_list; pban != NULL; pban = pban->next) {
+        if (str_suffix( pban->name, dnew->host)) {
+            write_to_descriptor(desc,
+            "Your site has been banned from this Mud.\n\r", 0);
+            close(desc);
+            free_string(dnew->host);
+            free_mem(dnew->outbuf, dnew->outsize);
+            dnew->next      = descriptor_free;
+            descriptor_free = dnew;
+            return;
+        }
     }
 
     /*
      * Init descriptor data.
      */
-    dnew->next			= descriptor_list;
-    descriptor_list		= dnew;
+    dnew->next      = descriptor_list;
+    descriptor_list = dnew;
 
     ProtocolNegotiate(dnew);
 
@@ -943,11 +951,11 @@ void new_descriptor( int control )
      * Send the greeting.
      */
     {
-	extern char * help_greeting;
-	if ( help_greeting[0] == '.' )
-	    write_to_buffer( dnew, help_greeting+1, 0 );
-	else
-	    write_to_buffer( dnew, help_greeting  , 0 );
+        extern char * help_greeting;
+        if ( help_greeting[0] == '.' )
+            write_to_buffer( dnew, help_greeting+1, 0 );
+        else
+            write_to_buffer( dnew, help_greeting  , 0 );
     }
 
     return;
