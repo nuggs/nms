@@ -900,9 +900,8 @@ void new_descriptor( int control )
          * call inet_ntop accordingly or we can just call this twice, first time
          * with the NUMERICHOST flag to get the IP address.
          *
-         * I couldn't find any documentation that says calling this twice is bad
-         * so here we are, getnameinfo is newer than inet_ntop, shouldn't we use
-         * the latest functions?
+         * I wish we could get both the IP and hostname with one call but...
+         * we can't.
          */
         if (getnameinfo((struct sockaddr *) &sock, INET6_ADDRSTRLEN, ip, sizeof ip, NULL, 0, NI_NUMERICHOST) == 0) {
             log_string("Do something with IP information: %s", ip);
