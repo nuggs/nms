@@ -307,23 +307,28 @@ static void signal_handler(int signo) {
 
     switch (signo) {
         case SIGPIPE:
+            log_string("lol sigpipe");
             /*
              * old code was as follows
              * signal(SIGPIPE, SIG_IGN); which just ignores SIGPIPE
              * I'm assuming we're just ignore it as well here by doing
-             * nothing at all when we catch it.
+             * nothing at all when we catch it.  Or maybe that's not how
+             * it works?
              */
         break;
         case SIGINT:
-            merc_down = true;
+            do_copyover(NULL, "");
+            log_string("lol sigint");
         break;
         case SIGCHLD:
+            log_string("lol sigchld");
             do {
                 p = waitpid(-1, NULL, WNOHANG);
             } while (p != (pid_t)0 && p != (pid_t)-1);
         break;
         case SIGTERM:
-            merc_down = true;
+            do_copyover(NULL, "");
+            log_string("lol sigterm");
         break;
     }
 }
