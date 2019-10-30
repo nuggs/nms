@@ -1,4 +1,4 @@
-#! /bin/sh -f
+#! /bin/bash
 # Written by Furey.
 # With additions from Tony.
 # Ported to 'sh' by Loki for those who don't have 'csh'.
@@ -7,9 +7,9 @@
 # Set the port number.
 if [ "$1" != "" ]
 then
-         port=$1 
+         port=$1
 else
-         port=4000
+         port=1234
 fi
 
 # Change to area directory.

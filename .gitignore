@@ -55,6 +55,7 @@ dkms.conf
 build/
 snippets
 merc
+shutdown.txt
 
 # Player files...  Has to be a better way to do this.
 player/a/A*
@@ -83,4 +84,3 @@ player/w/W*
 player/x/X*
 player/y/Y*
 player/z/Z*
-

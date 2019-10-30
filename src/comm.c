@@ -93,6 +93,7 @@ const	char 	go_ahead_str	[] = { '\0' };
 #if	defined(linux) || defined(unix)
 #include <fcntl.h>
 #include <netdb.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
@@ -300,6 +301,46 @@ void    bust_a_prompt           args( ( CHAR_DATA *ch ) );
 int     game_port = 1234, control;
 char    * game_port_str = "1234";
 
+#if defined(unix) || defined(linux)
+static void signal_handler(int signo) {
+    pid_t p;
+
+    switch (signo) {
+        case SIGPIPE:
+            /*
+             * old code was as follows
+             * signal(SIGPIPE, SIG_IGN); which just ignores SIGPIPE
+             * I'm assuming we're just ignore it as well here by doing
+             * nothing at all when we catch it.
+             */
+        break;
+        case SIGINT:
+            merc_down = true;
+        break;
+        case SIGCHLD:
+            do {
+                p = waitpid(-1, NULL, WNOHANG);
+            } while (p != (pid_t)0 && p != (pid_t)-1);
+        break;
+        case SIGTERM:
+            merc_down = true;
+        break;
+    }
+}
+
+void init_signals(void) {
+    struct sigaction sigact;
+
+    sigact.sa_handler = signal_handler;
+    sigemptyset(&sigact.sa_mask);
+    sigact.sa_flags = SA_NOCLDSTOP|SA_RESTART|SA_SIGINFO|SA_NOCLDWAIT;
+    sigaction(SIGPIPE, &sigact, (struct sigaction *) NULL);
+    sigaction(SIGINT, &sigact, (struct sigaction *) NULL);
+    sigaction(SIGCHLD, &sigact, (struct sigaction *) NULL);
+    sigaction(SIGTERM, &sigact, (struct sigaction *) NULL);
+}
+#endif
+
 int main( int argc, char *argv[] ) {
     struct timeval now_time;
     bool fCopyOver = FALSE;
@@ -387,8 +428,7 @@ int init_socket(int port) {
     struct addrinfo hints, *service, *ptr;
 
     /*
-     * AF_UNSPEC returns either IPv4 or IPv6 use the below
-     * AF_INET or AF_INET6 if you want to force either of those 
+     * Use AF_INET or AF_INET6 if you want to force either of those 
      */
     memset(&hints, 0, sizeof hints);
     hints.ai_family     = AF_UNSPEC;
@@ -633,23 +673,21 @@ void game_loop_mac_msdos( void )
 
 
 #if defined(unix) || defined(linux)
-void game_loop_unix( int control )
-{
+void game_loop_unix( int control ) {
     static struct timeval null_time;
     struct timeval last_time;
 
-    signal( SIGPIPE, SIG_IGN );
-    gettimeofday( &last_time, NULL );
+    init_signals();
+    gettimeofday(&last_time, NULL);
     current_time = (time_t) last_time.tv_sec;
 
     /* Main loop */
-    while ( !merc_down )
-    {
-	fd_set in_set;
-	fd_set out_set;
-	fd_set exc_set;
-	DESCRIPTOR_DATA *d;
-	int maxdesc;
+    while (!merc_down) {
+        fd_set in_set;
+        fd_set out_set;
+        fd_set exc_set;
+        DESCRIPTOR_DATA *d;
+        int maxdesc;
 
 #if defined(MALLOC_DEBUG)
 	if ( malloc_verify( ) != 1 )
