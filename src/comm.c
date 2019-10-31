@@ -509,7 +509,7 @@ int init_socket(int port) {
      * Most of this was years ago, I'm sure this is fine.
      */
     if (listen(sock, 10) < 0) {
-        perror("Init_socket: bind");
+        perror("Init_socket: listen");
         close(sock);
         exit(EXIT_FAILURE);
     }
