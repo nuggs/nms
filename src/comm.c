@@ -317,7 +317,6 @@ static void signal_handler(int signo) {
              */
         break;
         case SIGINT:
-            do_copyover(NULL, "");
             log_string("lol sigint");
         break;
         case SIGCHLD:
@@ -327,7 +326,6 @@ static void signal_handler(int signo) {
             } while (p != (pid_t)0 && p != (pid_t)-1);
         break;
         case SIGTERM:
-            do_copyover(NULL, "");
             log_string("lol sigterm");
         break;
     }
@@ -429,7 +427,7 @@ int main( int argc, char *argv[] ) {
 
 #if defined(unix) || defined(linux)
 int init_socket(int port) {
-    int keepalive_time = 120, keepalive = 1, keepalive_count = 10, keepalive_interval = 30, status = 0, sock = -1;
+    int keepalive_time = 120, keepalive = 1, keepalive_count = 10, keepalive_interval = 30, status = 0, sock = -1, x = 1;
     struct addrinfo hints, *service, *ptr;
 
     /*
@@ -448,9 +446,6 @@ int init_socket(int port) {
     }
 
     for (ptr = service; ptr != NULL; ptr = ptr->ai_next) {
-        struct sockaddr_in sin;
-        int x = 1;
-
         if ((sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol)) < 0) {
             perror("Failed to create socket");
             exit(EXIT_FAILURE);
@@ -469,24 +464,38 @@ int init_socket(int port) {
             ld.l_onoff  = 1;
             ld.l_linger = 1000;
 
-            if (setsockopt(fd, SOL_SOCKET, SO_DONTLINGER, (char *) &ld, sizeof(ld)) < 0) {
-                perror( "Init_socket: SO_DONTLINGER" );
-                close( fd );
-                exit( 1 );
+            if (setsockopt(sock, SOL_SOCKET, SO_DONTLINGER, (char *) &ld, sizeof(ld)) < 0) {
+                perror("Init_socket: SO_DONTLINGER");
+                close(sock);
+                exit(EXIT_FAILURE);
             }
         }
 #endif
 
-        sin.sin_family      = AF_UNSPEC;
-        sin.sin_addr.s_addr = INADDR_ANY;
-        sin.sin_port        = htons(game_port);
-
-        if (bind(sock, (struct sockaddr *) &sin, sizeof sin) < 0) {
+        if (bind(sock, ptr->ai_addr, ptr->ai_addrlen) < 0) {
             perror("Failed to bind to address");
             close(sock);
             exit(EXIT_FAILURE);
         }
-        break;
+
+        /*
+         * I believe I had issues trying to bind IPv4 addresses to the same port previously
+         * as I hadn't allocated any IPv6 addresses to my server.  I broke out of the loop
+         * after binding the first address which "fixed" the issue.
+         * However, when you have IPv6 enabled as well but still break out, you'll only
+         * listen on your IPv4 address which was causing issues because everything expects
+         * IPv6 to be working(At least, if your domain has an AAAA record as well as an A record).
+         * GNU/Linux and the BSDs support dual-stack sockets so we can listen to IPv4/6 on the same
+         * port.  So, we'll break out if there is nothing next which should fix if you server only
+         * supports IPv4 but will still allow IPv6 on servers which have it enabled.
+         * 
+         * /proc/sys/net/ipv6/bindv6only should report 0 if your server will listen on ipv4 as well
+         * when creating an IPv6 socket.
+         * You can also use setsockopt to enable or disable this feature if you can't change it
+         * at the system level.
+         */
+        if (ptr->ai_next == NULL)
+            break;
     }
 
     /* Have to make sure to clean up after getaddrinfo */
@@ -944,7 +953,8 @@ void new_descriptor( int control )
          * with the NUMERICHOST flag to get the IP address.
          *
          * I wish we could get both the IP and hostname with one call but...
-         * we can't.
+         * we can't.  We don't really need this we could get rid of it if we
+         * want.
          */
         if (getnameinfo((struct sockaddr *) &sock, INET6_ADDRSTRLEN, ip, sizeof ip, NULL, 0, NI_NUMERICHOST) == 0) {
             log_string("Do something with IP information: %s", ip);
