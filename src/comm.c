@@ -421,8 +421,7 @@ int main( int argc, char *argv[] ) {
      * That's all, folks.
      */
     log_string( "Normal termination of game." );
-    exit( 0 );
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 #if defined(unix) || defined(linux)
@@ -431,7 +430,7 @@ int init_socket(int port) {
     struct addrinfo hints, *service, *ptr;
 
     /*
-     * Use AF_INET or AF_INET6 if you want to force either of those 
+     * Use AF_INET or AF_INET6 instead of AF_UNSPEC if you want to force either of those 
      */
     memset(&hints, 0, sizeof hints);
     hints.ai_family     = AF_UNSPEC;
@@ -439,7 +438,7 @@ int init_socket(int port) {
     hints.ai_flags      = AI_PASSIVE;
 
     if ((status = getaddrinfo(NULL, game_port_str, &hints, &service)) != 0) {
-        char error[2046];
+        char error[2046]; /* Not sure if this is big enough? */
         snprintf(error, sizeof error, "getaddrinfo(): %s\n", gai_strerror(status));
         perror(error);
         exit(EXIT_FAILURE);
@@ -961,7 +960,7 @@ void new_descriptor( int control )
         }
 
         /* Now, we're getting the hostname of the connected client */
-        if (getnameinfo((struct sockaddr *) &sock, INET6_ADDRSTRLEN, host, sizeof host, NULL, 0, 0) == 0) {
+        if (getnameinfo((struct sockaddr *) &sock, INET6_ADDRSTRLEN, host, sizeof host, NULL, 0, AI_CANONNAME) == 0) {
             log_string("Host: %s", host);
             if (dnew->host != NULL)
                 free_string(dnew->host);
