@@ -53,6 +53,7 @@ dkms.conf
 
 # Diku/Merc related stuff
 build/
+log/*.log
 snippets
 merc
 shutdown.txt

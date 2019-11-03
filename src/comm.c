@@ -703,181 +703,162 @@ void game_loop_unix( int control ) {
         int maxdesc;
 
 #if defined(MALLOC_DEBUG)
-	if ( malloc_verify( ) != 1 )
-	    abort( );
+        if (malloc_verify() != 1)
+            abort();
 #endif
 
-	/*
-	 * Poll all active descriptors.
-	 */
-	FD_ZERO( &in_set  );
-	FD_ZERO( &out_set );
-	FD_ZERO( &exc_set );
-	FD_SET( control, &in_set );
-	maxdesc	= control;
-	for ( d = descriptor_list; d; d = d->next )
-	{
-	    maxdesc = UMAX( maxdesc, d->descriptor );
-	    FD_SET( d->descriptor, &in_set  );
-	    FD_SET( d->descriptor, &out_set );
-	    FD_SET( d->descriptor, &exc_set );
-	}
+        /*
+         * Poll all active descriptors.
+         */
+        FD_ZERO(&in_set);
+        FD_ZERO(&out_set);
+        FD_ZERO(&exc_set);
+        FD_SET(control, &in_set);
+        maxdesc	= control;
 
-	if ( select( maxdesc+1, &in_set, &out_set, &exc_set, &null_time ) < 0 )
-	{
-	    perror( "Game_loop: select: poll" );
-	    exit( 1 );
-	}
+        for (d = descriptor_list; d; d = d->next) {
+            maxdesc = UMAX(maxdesc, d->descriptor);
+            FD_SET(d->descriptor, &in_set);
+            FD_SET(d->descriptor, &out_set);
+            FD_SET(d->descriptor, &exc_set);
+        }
 
-	/*
-	 * New connection?
-	 */
-	if ( FD_ISSET( control, &in_set ) )
-	    new_descriptor( control );
+        if (select(maxdesc+1, &in_set, &out_set, &exc_set, &null_time) < 0) {
+            perror("Game_loop: select: poll");
+            exit(EXIT_FAILURE);
+        }
 
-	/*
-	 * Kick out the freaky folks.
-	 */
-	for ( d = descriptor_list; d != NULL; d = d_next )
-	{
-	    d_next = d->next;   
-	    if ( FD_ISSET( d->descriptor, &exc_set ) )
-	    {
-		FD_CLR( d->descriptor, &in_set  );
-		FD_CLR( d->descriptor, &out_set );
-		if ( d->character )
-		    save_char_obj( d->character );
-		d->outtop	= 0;
-		close_socket( d );
-	    }
-	}
+        /*
+         * New connection?
+         */
+        if (FD_ISSET(control, &in_set))
+            new_descriptor(control);
 
-	/*
-	 * Process input.
-	 */
-	for ( d = descriptor_list; d != NULL; d = d_next )
-	{
-	    d_next	= d->next;
-	    d->fcommand	= FALSE;
+        /*
+         * Kick out the freaky folks.
+         */
+        for (d = descriptor_list; d != NULL; d = d_next) {
+            d_next = d->next;
 
-	    if ( FD_ISSET( d->descriptor, &in_set ) )
-	    {
-		if ( d->character != NULL )
-		    d->character->timer = 0;
-		if ( !read_from_descriptor( d ) )
-		{
-		    FD_CLR( d->descriptor, &out_set );
-		    if ( d->character != NULL )
-			save_char_obj( d->character );
-		    d->outtop	= 0;
-		    close_socket( d );
-		    continue;
-		}
-	    }
+            if (FD_ISSET(d->descriptor, &exc_set)) {
+                FD_CLR(d->descriptor, &in_set);
+                FD_CLR(d->descriptor, &out_set);
+                if (d->character)
+                    save_char_obj(d->character);
+                d->outtop	= 0;
+                close_socket(d);
+            }
+        }
 
-	    if ( d->character != NULL && d->character->wait > 0 )
-	    {
-		--d->character->wait;
-		continue;
-	    }
+        /*
+         * Process input.
+         */
+        for (d = descriptor_list; d != NULL; d = d_next) {
+            d_next	= d->next;
+            d->fcommand	= FALSE;
 
-	    read_from_buffer( d );
-	    if ( d->incomm[0] != '\0' )
-	    {
-		d->fcommand	= TRUE;
+            if (FD_ISSET(d->descriptor, &in_set)) {
+                if (d->character != NULL)
+                    d->character->timer = 0;
 
-		if (d->pProtocol != NULL)
-		    d->pProtocol->WriteOOB = 0;
+                if (!read_from_descriptor(d)) {
+                    FD_CLR(d->descriptor, &out_set);
+                    if (d->character != NULL)
+                        save_char_obj(d->character);
+                    d->outtop = 0;
+                    close_socket(d);
+                    continue;
+                }
+            }
 
-		stop_idling( d->character );
+            if (d->character != NULL && d->character->wait > 0) {
+                --d->character->wait;
+                continue;
+            }
 
-		if ( d->connected == CON_PLAYING )
-		    if ( d->showstr_point )
-		        show_string( d, d->incomm );
-		    else
-		        interpret( d->character, d->incomm );
-		else
-		    nanny( d, d->incomm );
+            read_from_buffer(d);
+            if (d->incomm[0] != '\0') {
+                d->fcommand	= TRUE;
 
-		d->incomm[0]	= '\0';
-	    }
-	}
+                if (d->pProtocol != NULL)
+                    d->pProtocol->WriteOOB = 0;
 
+                stop_idling(d->character);
 
+                if (d->connected == CON_PLAYING)
+                    if (d->showstr_point)
+                        show_string(d, d->incomm);
+                    else
+                        interpret(d->character, d->incomm);
+                else
+                    nanny(d, d->incomm);
 
-	/*
-	 * Autonomous game motion.
-	 */
-	update_handler( );
+		        d->incomm[0] = '\0';
+	        }
+        }
 
+        /*
+         * Autonomous game motion.
+         */
+        update_handler();
 
+        /*
+         * Output.
+         */
+        for (d = descriptor_list; d != NULL; d = d_next) {
+            d_next = d->next;
 
-	/*
-	 * Output.
-	 */
-	for ( d = descriptor_list; d != NULL; d = d_next )
-	{
-	    d_next = d->next;
+            if ((d->fcommand || d->outtop > 0) && FD_ISSET(d->descriptor, &out_set)) {
+                if (!process_output(d, TRUE)) {
+                    if (d->character != NULL)
+                        save_char_obj(d->character);
+                    d->outtop = 0;
+                    close_socket(d);
+                }
+            }
+        }
 
-	    if ( ( d->fcommand || d->outtop > 0 )
-	    &&   FD_ISSET(d->descriptor, &out_set) )
-	    {
-		if ( !process_output( d, TRUE ) )
-		{
-		    if ( d->character != NULL )
-			save_char_obj( d->character );
-		    d->outtop	= 0;
-		    close_socket( d );
-		}
-	    }
-	}
+        /*
+         * Synchronize to a clock.
+         * Sleep( last_time + 1/PULSE_PER_SECOND - now ).
+         * Careful here of signed versus unsigned arithmetic.
+         */
+        {
+            struct timeval now_time;
+            long secDelta;
+            long usecDelta;
 
+            gettimeofday(&now_time, NULL);
+            usecDelta	= ((int) last_time.tv_usec) - ((int) now_time.tv_usec)
+                + 1000000 / PULSE_PER_SECOND;
+            secDelta	= ((int) last_time.tv_sec) - ((int) now_time.tv_sec);
 
+            while (usecDelta < 0) {
+                usecDelta += 1000000;
+                secDelta  -= 1;
+            }
 
-	/*
-	 * Synchronize to a clock.
-	 * Sleep( last_time + 1/PULSE_PER_SECOND - now ).
-	 * Careful here of signed versus unsigned arithmetic.
-	 */
-	{
-	    struct timeval now_time;
-	    long secDelta;
-	    long usecDelta;
+            while (usecDelta >= 1000000) {
+                usecDelta -= 1000000;
+                secDelta  += 1;
+            }
+            //log_string("usecDelta")
+            if (secDelta > 0 || (secDelta == 0 && usecDelta > 0)) {
+                struct timeval stall_time;
 
-	    gettimeofday( &now_time, NULL );
-	    usecDelta	= ((int) last_time.tv_usec) - ((int) now_time.tv_usec)
-			+ 1000000 / PULSE_PER_SECOND;
-	    secDelta	= ((int) last_time.tv_sec ) - ((int) now_time.tv_sec );
-	    while ( usecDelta < 0 )
-	    {
-		usecDelta += 1000000;
-		secDelta  -= 1;
-	    }
+                stall_time.tv_usec = usecDelta;
+                stall_time.tv_sec  = secDelta;
 
-	    while ( usecDelta >= 1000000 )
-	    {
-		usecDelta -= 1000000;
-		secDelta  += 1;
-	    }
+                if (select(0, NULL, NULL, NULL, &stall_time) < 0) {
+                    perror("Game_loop: select: stall");
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
 
-	    if ( secDelta > 0 || ( secDelta == 0 && usecDelta > 0 ) )
-	    {
-		struct timeval stall_time;
-
-		stall_time.tv_usec = usecDelta;
-		stall_time.tv_sec  = secDelta;
-		if ( select( 0, NULL, NULL, NULL, &stall_time ) < 0 )
-		{
-		    perror( "Game_loop: select: stall" );
-		    exit( 1 );
-		}
-	    }
-	}
-
-	gettimeofday( &last_time, NULL );
-	current_time = (time_t) last_time.tv_sec;
+        gettimeofday(&last_time, NULL);
+        current_time = (time_t) last_time.tv_sec;
     }
-
     return;
 }
 #endif
@@ -885,19 +866,18 @@ void game_loop_unix( int control ) {
 void init_descriptor(DESCRIPTOR_DATA *dnew, int desc) {
     static DESCRIPTOR_DATA d_zero;
 
-    *dnew       = d_zero;
+    *dnew               = d_zero;
     dnew->descriptor    = desc;
-    dnew->connected = CON_GET_NAME;
+    dnew->connected     = CON_GET_NAME;
     dnew->showstr_head  = NULL;
     dnew->showstr_point = NULL;
-    dnew->outsize   = 2000;
-    dnew->outbuf    = alloc_mem( dnew->outsize );
+    dnew->outsize       = 2000;
+    dnew->outbuf        = alloc_mem( dnew->outsize );
     dnew->pProtocol     = ProtocolCreate();
 }
 
 #if defined(unix) || defined(linux)
-void new_descriptor( int control )
-{
+void new_descriptor( int control ) {
 	struct sockaddr_storage sock;
     DESCRIPTOR_DATA *dnew;
     BAN_DATA *pban;
