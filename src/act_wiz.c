@@ -677,8 +677,7 @@ void do_ostat( CHAR_DATA *ch, char *argument )
 }
 
 
-void do_mstat( CHAR_DATA *ch, char *argument )
-{
+void do_mstat( CHAR_DATA *ch, char *argument ) {
     char buf[MAX_STRING_LENGTH];
     char buf1[MAX_STRING_LENGTH];
     char arg[MAX_INPUT_LENGTH];
@@ -1822,46 +1821,35 @@ void do_wizlock( CHAR_DATA *ch, char *argument )
     return;
 }
 
-
-
-void do_slookup( CHAR_DATA *ch, char *argument )
-{
+void do_slookup( CHAR_DATA *ch, char *argument ) {
     char buf[MAX_STRING_LENGTH];
     char buf1[MAX_STRING_LENGTH];
     char arg[MAX_INPUT_LENGTH];
     int sn;
 
     one_argument( argument, arg );
-    if ( arg[0] == '\0' )
-    {
-	send_to_char( "Slookup what?\n\r", ch );
-	return;
+    if ( arg[0] == '\0' ) {
+        send_to_char( "Slookup what?\n\r", ch );
+        return;
     }
 
-    if ( !str_cmp( arg, "all" ) )
-    {
+    if ( !str_cmp( arg, "all" ) ) {
         buf1[0] = '\0';
-	for ( sn = 0; sn < MAX_SKILL; sn++ )
-	{
-	    if ( skill_table[sn].name == NULL )
-		break;
-	    sprintf( buf, "Sn: %4d Slot: %4d Skill/spell: '%s'\n\r",
-		sn, skill_table[sn].slot, skill_table[sn].name );
-	    strcat( buf1, buf );
-	}
-	send_to_char( buf1, ch );
-    }
-    else
-    {
-	if ( ( sn = skill_lookup( arg ) ) < 0 )
-	{
-	    send_to_char( "No such skill or spell.\n\r", ch );
-	    return;
-	}
+        for ( sn = 0; sn < MAX_SKILL; sn++ ) {
+            if ( skill_table[sn].name == NULL )
+            break;
+            sprintf( buf, "Sn: %4d Slot: %4d Skill/spell: '%s'\n\r", sn, skill_table[sn].slot, skill_table[sn].name );
+            strcat( buf1, buf );
+        }
+        send_to_char( buf1, ch );
+    } else {
+        if ( ( sn = skill_lookup( arg ) ) < 0 ) {
+            send_to_char( "No such skill or spell.\n\r", ch );
+            return;
+        }
 
-	sprintf( buf, "Sn: %4d Slot: %4d Skill/spell: '%s'\n\r",
-	    sn, skill_table[sn].slot, skill_table[sn].name );
-	send_to_char( buf, ch );
+        sprintf( buf, "Sn: %4d Slot: %4d Skill/spell: '%s'\n\r", sn, skill_table[sn].slot, skill_table[sn].name );
+        send_to_char( buf, ch );
     }
 
     return;

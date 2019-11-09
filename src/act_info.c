@@ -432,9 +432,11 @@ void do_look( CHAR_DATA *ch, char *argument )
 
     if ( arg1[0] == '\0' || !str_cmp( arg1, "auto" ) )
     {
-	/* 'look' or 'look auto' */
-	send_to_char( ch->in_room->name, ch );
-	send_to_char( "\n\r", ch );
+        char room_name[512]; /* If this isn't big enough... */
+
+        /* 'look' or 'look auto' */
+        snprintf(room_name, sizeof room_name, "%sW%s%sn\r\n", "^", ch->in_room->name, "^");
+        send_to_char(room_name, ch);
 
 	if ( !IS_NPC(ch) && IS_SET(ch->act, PLR_AUTOEXIT) )
 	    do_exits( ch, "auto" );

@@ -1256,11 +1256,14 @@ extern		KILL_DATA		kill_table	[];
 extern		char			log_buf		[];
 extern		TIME_INFO_DATA		time_info;
 extern		WEATHER_DATA		weather_info;
-extern		int                     top_area;
-extern		int                     top_help;
-extern		int                     top_mob_index;
-extern		int                     top_obj_index;
-extern		int                     top_room;
+extern		int                 top_area;
+extern		int                 top_help;
+extern		int                 top_mob_index;
+extern		int                 top_obj_index;
+extern		int                 top_room;
+extern      int                 top_ed;
+extern      int                 top_exit;
+extern      int                 top_reset;
 
 
 /*

@@ -1,10 +1,12 @@
-CC      = gcc
-RM	    = rm
-EXE     = merc
-PROF    = #-g
+CC          = gcc
+RM	        = rm
+EXE         = merc
+NATIVEFLAG  = -march=native
+OPTIMIZE    = -O1
+PROF        = -g
 
-C_FLAGS = -O3 -Wall $(PROF) $(NOCRYPT)
-L_FLAGS = -O3 $(PROF) -lcrypt
+C_FLAGS = -Wall $(NATIVEFLAG) $(OPTIMIZE) $(PROF)
+L_FLAGS = $(NATIVEFLAG) $(OPTIMIZE) $(PROF) -lcrypt
 
 C_FILES := $(wildcard *.c)
 O_FILES = act_comm.o act_info.o act_move.o act_obj.o act_wiz.o comm.o const.o \

@@ -2576,45 +2576,63 @@ static void SendATCP( descriptor_t *apDescriptor, const char *apVariable, const 
  Local MSSP functions.
  ******************************************************************************/
 
-static const char *GetMSSP_Players() {
+static const char *GetMSSP_Players(void) {
    static char Buffer[32];
    sprintf( Buffer, "%d", s_Players );
    return Buffer;
 }
 
-static const char *GetMSSP_Uptime() {
+static const char *GetMSSP_Uptime(void) {
    static char Buffer[32];
    sprintf( Buffer, "%d", (int)s_Uptime );
    return Buffer;
 }
 
-static const char *area_count() {
+static const char *area_count(void) {
     static char buf[32];
     snprintf(buf, sizeof(buf), "%d", top_area);
     return buf;
 }
 
-static const char *help_count() {
+static const char *help_count(void) {
     static char buf[32];
     snprintf(buf, sizeof(buf), "%d", top_help);
     return buf;
 }
 
-static const char *mob_count() {
+static const char *mob_count(void) {
     static char buf[32];
     snprintf(buf, sizeof(buf), "%d", top_mob_index);
     return buf;
 }
 
-static const char *obj_count() {
+static const char *obj_count(void) {
     static char buf[32];
     snprintf(buf, sizeof(buf), "%d", top_obj_index);
     return buf;
 }
 
-static const char *room_count() {
+static const char *room_count(void) {
     static char buf[32];
     snprintf(buf, sizeof(buf), "%d", top_room);
+    return buf;
+}
+
+static const char *exit_count(void) {
+    static char buf[64];
+    snprintf(buf, sizeof buf, "%d", top_exit);
+    return buf;
+}
+
+static const char *ed_count(void) {
+    static char buf[64];
+    snprintf(buf, sizeof buf, "%d", top_ed);
+    return buf;
+}
+
+static const char *reset_count(void) {
+    static char buf[64];
+    snprintf(buf, sizeof buf, "%d", top_reset);
     return buf;
 }
 
@@ -2644,36 +2662,37 @@ static void SendMSSP( descriptor_t *apDescriptor )
 
       /* Generic */
       { "CRAWL DELAY",        "-1" },
-/*
-      { "HOSTNAME",           "" },
-      { "PORT",               "" },
-      { "CODEBASE",           "" },
+
+      { "HOSTNAME",           "highasahelicopter.xyz" },
+      { "PORT",               "1234" },
+      { "CODEBASE",           "Merc 2.2" },
       { "CONTACT",            "" },
-      { "CREATED",            "" },
+      { "CREATED",            "2018" },
       { "ICON",               "" },
-      { "IP",                 "" },
-      { "LANGUAGE",           "" },
-      { "LOCATION",           "" },
+      { "IP",                 "172.110.29.208" },
+      { "IPV6",               "2604:880:a:6::8fc" },
+      { "LANGUAGE",           "English" },
+      { "LOCATION",           "United States of America" },
       { "MINIMUM AGE",        "" },
-      { "WEBSITE",            "" },
-*/
+      { "WEBSITE",            "https://highasahelicopter.xyz" },
+
       /* Categorisation */
-/*
-      { "FAMILY",             "" },
-      { "GENRE",              "" },
-      { "GAMEPLAY",           "" },
-      { "STATUS",             "" },
+
+      { "FAMILY",             "DikuMUD" },
+      { "GENRE",              "Medieval Fantasy" },
+      { "GAMEPLAY",           "Hack and Slash" },
+      { "STATUS",             "Live" },
       { "GAMESYSTEM",         "" },
       { "INTERMUD",           "" },
       { "SUBGENRE",           "" },
-*/
+
       /* World */
       { "AREAS",              FUNCTION_CALL(area_count) },
       { "HELPFILES",          FUNCTION_CALL(help_count) },
       { "MOBILES",            FUNCTION_CALL(mob_count) },
       { "OBJECTS",            FUNCTION_CALL(obj_count) },
       { "ROOMS",              FUNCTION_CALL(room_count) },
-      { "CLASSES",            "0" },
+      { "CLASSES",            "4" },
       { "LEVELS",             "36" },
       { "RACES",              "0" },
       { "SKILLS",             "0" },
@@ -2707,14 +2726,14 @@ static void SendMSSP( descriptor_t *apDescriptor )
       /* Extended variables */
 
       /* World */
-/*
+
       { "DBSIZE",             "0" },
-      { "EXITS",              "0" },
-      { "EXTRA DESCRIPTIONS", "0" },
+      { "EXITS",              FUNCTION_CALL(exit_count) },
+      { "EXTRA DESCRIPTIONS", FUNCTION_CALL(ed_count) },
       { "MUDPROGS",           "0" },
       { "MUDTRIGS",           "0" },
-      { "RESETS",             "0" },
-*/
+      { "RESETS",             FUNCTION_CALL(reset_count) },
+
       /* Game */
 /*
       { "ADULT MATERIAL",     "0" },

@@ -50,7 +50,7 @@ do
     # Delete this out if no adb.
     if [ -r core ]
     then
-            echo '$c' | adb ../src/merc
+            echo '$c' | gdb ../src/merc
     fi
 
     # Restart, giving old connections a chance to die.

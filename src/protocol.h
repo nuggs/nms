@@ -14,7 +14,7 @@
  Set your MUD_NAME, and change descriptor_t if necessary.
  ******************************************************************************/
 
-#define MUD_NAME "Nuggs Merc MUD"
+#define MUD_NAME "Sellsword"
 
 typedef struct descriptor_data descriptor_t;
 
