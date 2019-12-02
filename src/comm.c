@@ -308,13 +308,6 @@ static void signal_handler(int signo) {
     switch (signo) {
         case SIGPIPE:
             log_string("lol sigpipe");
-            /*
-             * old code was as follows
-             * signal(SIGPIPE, SIG_IGN); which just ignores SIGPIPE
-             * I'm assuming we're just ignore it as well here by doing
-             * nothing at all when we catch it.  Or maybe that's not how
-             * it works?
-             */
         break;
         case SIGINT:
             log_string("lol sigint");
@@ -337,7 +330,14 @@ void init_signals(void) {
     sigact.sa_handler = signal_handler;
     sigemptyset(&sigact.sa_mask);
     sigact.sa_flags = SA_NOCLDSTOP|SA_RESTART|SA_SIGINFO|SA_NOCLDWAIT;
-    sigaction(SIGPIPE, &sigact, (struct sigaction *) NULL);
+    /* ignore pipes or whatever like originally done with signals. */
+    sigaction(SIGPIPE, &(struct sigaction){{SIG_IGN}}, NULL);
+
+    /*
+     * We can catch more signals as well.  Apparently, I didn't make it
+     * too far when I started writing this code.  Oh well, we'll expand
+     * on it later when we need to.
+     */
     sigaction(SIGINT, &sigact, (struct sigaction *) NULL);
     sigaction(SIGCHLD, &sigact, (struct sigaction *) NULL);
     sigaction(SIGTERM, &sigact, (struct sigaction *) NULL);
