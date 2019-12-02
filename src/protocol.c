@@ -2666,14 +2666,14 @@ static void SendMSSP( descriptor_t *apDescriptor )
       { "HOSTNAME",           "highasahelicopter.xyz" },
       { "PORT",               "1234" },
       { "CODEBASE",           "Merc 2.2" },
-      { "CONTACT",            "" },
+      { "CONTACT",            "lol@highasahelicopter.xyz" },
       { "CREATED",            "2018" },
-      { "ICON",               "" },
+      { "ICON",               "https://en.gravatar.com/userimage/17526793/cb9278259a0ccb0f273751e4d5e2ad0b.jpg" },
       { "IP",                 "172.110.29.208" },
-      { "IPV6",               "2604:880:a:6::8fc" },
+      //{ "IPV6",               "2604:880:a:6::8fc" },
       { "LANGUAGE",           "English" },
       { "LOCATION",           "United States of America" },
-      { "MINIMUM AGE",        "" },
+      { "MINIMUM AGE",        "0" },
       { "WEBSITE",            "https://highasahelicopter.xyz" },
 
       /* Categorisation */
@@ -2682,9 +2682,9 @@ static void SendMSSP( descriptor_t *apDescriptor )
       { "GENRE",              "Medieval Fantasy" },
       { "GAMEPLAY",           "Hack and Slash" },
       { "STATUS",             "Live" },
-      { "GAMESYSTEM",         "" },
-      { "INTERMUD",           "" },
-      { "SUBGENRE",           "" },
+      { "GAMESYSTEM",         "Custom" },
+      { "INTERMUD",           "None" },
+      { "SUBGENRE",           "None" },
 
       /* World */
       { "AREAS",              FUNCTION_CALL(area_count) },

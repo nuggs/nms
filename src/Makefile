@@ -2,7 +2,7 @@ CC          = gcc
 RM	        = rm
 EXE         = merc
 NATIVEFLAG  = -march=native
-OPTIMIZE    = -O1
+OPTIMIZE    = -O2
 PROF        = -g
 
 C_FLAGS = -Wall $(NATIVEFLAG) $(OPTIMIZE) $(PROF)

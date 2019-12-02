@@ -51,9 +51,15 @@ void	fwrite_obj	args( ( CHAR_DATA *ch,  OBJ_DATA  *obj,
 void	fread_char	args( ( CHAR_DATA *ch,  FILE *fp ) );
 void	fread_obj	args( ( CHAR_DATA *ch,  FILE *fp ) );
 
+const char initial(const char *str) {
+    static char initial = '\0';
+
+    initial = LOWER(str[0]);
+    return initial;
+}
 
 /* Courtesy of Yaz of 4th Realm */
-char *initial( const char *str )
+char *initial_old( const char *str )
 {
     static char strint[ MAX_STRING_LENGTH ];
 
@@ -83,7 +89,7 @@ void save_char_obj( CHAR_DATA *ch )
 
     /* player files parsed directories by Yaz 4th Realm */
 #if !defined(machintosh) && !defined(MSDOS)
-    sprintf( strsave, "%s%s%s%s", PLAYER_DIR, initial( ch->name ),
+    sprintf( strsave, "%s%c%s%s", PLAYER_DIR, initial(ch->name),
 	    "/", capitalize( ch->name ) );
 #else
     sprintf( strsave, "%s%s", PLAYER_DIR, capitalize( ch->name ) );
@@ -378,7 +384,7 @@ bool load_char_obj( DESCRIPTOR_DATA *d, char *name )
     /* parsed player file directories by Yaz of 4th Realm */
     /* decompress if .gz file exists - Thx Alander */
 #if !defined(macintosh) && !defined(MSDOS)
-    sprintf( strsave, "%s%s%s%s%s", PLAYER_DIR, initial( ch->name ),
+    sprintf( strsave, "%s%c%s%s%s", PLAYER_DIR, initial( ch->name ),
 	    "/", capitalize( name ), ".gz" );
     if ( ( fp = fopen( strsave, "r" ) ) != NULL )
     {
@@ -389,7 +395,7 @@ bool load_char_obj( DESCRIPTOR_DATA *d, char *name )
 #endif
 
 #if !defined(machintosh) && !defined(MSDOS)
-    sprintf( strsave, "%s%s%s%s", PLAYER_DIR, initial( ch->name ),
+    sprintf( strsave, "%s%c%s%s", PLAYER_DIR, initial( ch->name ),
 	    "/", capitalize( name ) );
 #else
     sprintf( strsave, "%s%s", PLAYER_DIR, capitalize( name ) );

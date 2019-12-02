@@ -1822,9 +1822,9 @@ void do_wizlock( CHAR_DATA *ch, char *argument )
 }
 
 void do_slookup( CHAR_DATA *ch, char *argument ) {
-    char buf[MAX_STRING_LENGTH];
-    char buf1[MAX_STRING_LENGTH];
-    char arg[MAX_INPUT_LENGTH];
+    char buf[MAX_STRING_LENGTH] = {};
+    char buf1[MAX_STRING_LENGTH*2] = {};
+    char arg[MAX_INPUT_LENGTH] = {};
     int sn;
 
     one_argument( argument, arg );
