@@ -1,0 +1,9 @@
+Latest merc release without mob progs and updated networking to take advantage of IPv6.
+
+Todo is to add scripting for mobs, objects, rooms, areas and globally.  Also I would like
+to convert area files to json and then also add database support(PostgreSQL/MariaDB).
+I'd prefer to also separate objects and npcs from area files and have them be separate.
+We'll see...
+
+Other than that, have fun, no requirements from me other than following the original license
+agreement from the previous developers.  They did all the work, I'm just playing around.
