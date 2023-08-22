@@ -87,8 +87,6 @@ typedef struct	room_index_data		ROOM_INDEX_DATA;
 typedef struct	shop_data		SHOP_DATA;
 typedef struct	time_info_data		TIME_INFO_DATA;
 typedef struct	weather_data		WEATHER_DATA;
-typedef struct  mob_prog_data           MPROG_DATA;         /* MOBprogram */
-typedef struct  mob_prog_act_list       MPROG_ACT_LIST;     /* MOBprogram */
 
 
 /*
@@ -769,8 +767,6 @@ struct	mob_index_data
     sh_int		damsizedice;		/* Unused */
     sh_int		damplus;		/* Unused */
     int			gold;			/* Unused */
-    MPROG_DATA *        mobprogs;               /* Used by MOBprogram */
-    int                 progtypes;              /* Used by MOBprogram */
 };
 
 
@@ -833,8 +829,6 @@ struct	char_data
     sh_int		armor;
     sh_int		wimpy;
     sh_int		deaf;
-    MPROG_ACT_LIST *    mpact;                  /* Used by MOBprogram */
-    int                 mpactnum;               /* Used by MOBprogram */
 };
 
 
@@ -862,27 +856,6 @@ struct	pc_data
     sh_int		condition	[3];
     sh_int              pagelen;
     sh_int		learned		[MAX_SKILL];
-};
-
-/*
- * MOBprogram block
-*/
-
-struct  mob_prog_act_list
-{
-    MPROG_ACT_LIST * next;
-    char *           buf;
-    CHAR_DATA *      ch;
-    OBJ_DATA *       obj;
-    void *           vo;
-};
-
-struct  mob_prog_data
-{
-    MPROG_DATA *next;
-    int         type;
-    char *      arglist;
-    char *      comlist;
 };
 
 /*
@@ -1814,29 +1787,6 @@ int	slot_lookup	args( ( int slot ) );
 bool	saves_spell	args( ( int level, CHAR_DATA *victim ) );
 void	obj_cast_spell	args( ( int sn, int level, CHAR_DATA *ch,
 				    CHAR_DATA *victim, OBJ_DATA *obj ) );
-
-/* mob_prog.c */
-#ifdef DUNNO_STRSTR
-char *  strstr                  args( (const char *s1, const char *s2 ) );
-#endif
-
-void    mprog_wordlist_check    args( ( char * arg, CHAR_DATA *mob,
-                CHAR_DATA* actor, OBJ_DATA* object, void* vo, int type ) );
-void    mprog_percent_check     args( ( CHAR_DATA *mob,
-                CHAR_DATA* actor, OBJ_DATA* object, void* vo, int type ) );
-void    mprog_act_trigger       args( ( char* buf, CHAR_DATA* mob,
-                        CHAR_DATA* ch, OBJ_DATA* obj, void* vo ) );
-void    mprog_bribe_trigger     args( ( CHAR_DATA* mob, CHAR_DATA* ch,
-                        int amount ) );
-void    mprog_entry_trigger     args( ( CHAR_DATA* mob ) );
-void    mprog_give_trigger      args( ( CHAR_DATA* mob, CHAR_DATA* ch,
-                        OBJ_DATA* obj ) );
-void    mprog_greet_trigger     args( ( CHAR_DATA* mob ) );
-void    mprog_fight_trigger     args( ( CHAR_DATA* mob, CHAR_DATA* ch ) );
-void    mprog_hitprcnt_trigger  args( ( CHAR_DATA* mob, CHAR_DATA* ch ) );
-void    mprog_death_trigger     args( ( CHAR_DATA* mob ) );
-void    mprog_random_trigger    args( ( CHAR_DATA* mob ) );
-void    mprog_speech_trigger    args( ( char* txt, CHAR_DATA* mob ) );
 
 /* save.c */
 void	save_char_obj	args( ( CHAR_DATA *ch ) );

@@ -1,5 +1,5 @@
 CC          = gcc
-RM	        = rm
+RM	    = rm
 EXE         = merc
 NATIVEFLAG  = -march=native
 OPTIMIZE    = -O2

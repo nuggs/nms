@@ -200,11 +200,10 @@ void do_cast( CHAR_DATA *ch, char *argument )
     /*
      * Only MOBprogrammed mobs not charmed can cast spells
      * like PC's
+     * This might not be needed, we'll see...
      */
-    if ( IS_NPC(ch)
-	&& ( !ch->pIndexData->progtypes
-	    || IS_AFFECTED( ch, AFF_CHARM ) ) )
-	return;
+    if (IS_NPC(ch) && IS_AFFECTED(ch, AFF_CHARM))
+        return;
 
     target_name = one_argument( argument, arg1 );
     one_argument( target_name, arg2 );

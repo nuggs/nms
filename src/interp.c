@@ -1645,18 +1645,3 @@ bool IS_SWITCHED( CHAR_DATA *ch )
 
 }
 
-bool MP_Commands( CHAR_DATA *ch )	/* Can MOBProged mobs
-					   use mpcommands? TRUE if yes.
-					   - Kahn */
-{
-  if ( IS_SWITCHED ( ch ) )
-    return FALSE;
-
-  if ( IS_NPC( ch )
-      && ch->pIndexData->progtypes
-      && !IS_AFFECTED( ch, AFF_CHARM ) )
-    return TRUE;
-
-  return FALSE;
-
-}
